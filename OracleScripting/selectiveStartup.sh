@@ -61,7 +61,7 @@ _listOraclePorts() {
     ## 1630  - Oracle Connection Manager
     ## 1830  - Oracle Connection Manager Admin
     ## 
-    netstat -l | grep -E '1521|1526|1630|1830'
+    netstat -na | grep -E '1521|1526|1630|1830'
 }
 
 _checkInstanceStatus() {
