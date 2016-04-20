@@ -81,7 +81,46 @@ _viewTablespaces() {
             SELECT V\$TABLESPACE.NAME, ((SUM(V\$DATAFILE.BYTES) / 1024) / 1024) AS DATAFILES_SIZE_IN_MB FROM V\$TABLESPACE INNER JOIN V\$DATAFILE ON V\$DATAFILE.TS# = V\$TABLESPACE.TS# GROUP BY V\$TABLESPACE.NAME ORDER BY V\$TABLESPACE.NAME;
             QUIT;
 EOF
-        read -p "Pulse enter para continuar"
+        read -p "Pulse enter para continuar" any
+    fi
+}
+
+_viewTemporaryTablespaces() {
+    _checkInstanceStatus
+
+    if [ $isInstanceUp = true ]
+    then
+        clear
+        echo 
+        echo "Tablespaces temporales de la instancia '${ORACLE_SID}': "
+
+        sqlplus -S / AS SYSDBA <<EOF
+            SET LINE 5000
+            SELECT V\$TABLESPACE.NAME, ((SUM(DBA_TEMP_FILES.BYTES) / 1024) / 1024) AS TEMP_DATAFILE_SIZE_IN_MB FROM V\$TABLESPACE INNER JOIN DBA_TEMP_FILES ON DBA_TEMP_FILES.TABLESPACE_NAME = V\$TABLESPACE.NAME GROUP BY V\$TABLESPACE.NAME ORDER BY V\$TABLESPACE.NAME;
+            QUIT;
+EOF
+
+        read -p "Pulse enter para continuar" any
+    fi
+}
+
+_viewAllDatafiles() {
+    _checkInstanceStatus
+
+    if [ $isInstanceUp = true ]
+    then
+        clear
+        echo
+        echo "Datafiles de cada tablespace de la instancia ${ORACLE_SID}: "
+
+        sqlplus -S / AS SYSDBA <<EOF
+            SET LINE 90
+            SET WRAP OFF
+            SELECT TABLESPACE_NAME, FILE_NAME FROM DBA_DATA_FILES UNION SELECT TABLESPACE_NAME, FILE_NAME FROM DBA_TEMP_FILES ORDER BY TABLESPACE_NAME;
+            QUIT;
+EOF
+
+        read -p "Pulse enter para continuar" any
     fi
 }
 
@@ -193,11 +232,15 @@ do
     echo "1. Crear tablespace"
     echo "2. Crear tablespace temporal"
     echo "3. Crear usuario asignando tablespace"
+    echo
     echo "4. Ver usuarios de la base de datos"
     echo "5. Ver tablespaces de la instancia"
-    echo "6. Eliminar un tablespace"
-    echo "7. Eliminar un usuario"
-    echo "9. Exit"
+    echo "6. Ver tablespaces temporales de la instancia"
+    echo "7. Ver datafiles de cada tablespace"
+    echo
+    echo "8. Eliminar un tablespace"
+    echo "9. Eliminar un usuario"
+    echo "10. Exit"
     echo
     read -p "Type your option number: " selection1
 
@@ -218,12 +261,18 @@ do
             _viewTablespaces
             ;;
         6)
-            _deleteTablespace
+            _viewTemporaryTablespaces
             ;;
         7)
-            _deleteUser
+            _viewAllDatafiles
+            ;;
+        8)
+            _deleteTablespace
             ;;
         9)
+            _deleteUser
+            ;;
+        10)
             clear
             exit
             ;;
