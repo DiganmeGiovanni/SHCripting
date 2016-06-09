@@ -118,8 +118,8 @@ _startInstance() {
     then
         echo " * Instance is already running"
     else
-        sqlplus /nolog <<EOF
-            CONNECT / AS SYSDBA
+        echo "Levantando instancia ${ORACLE_SID} ... "
+        sqlplus -S / AS SYSDBA <<EOF > logfile
             STARTUP
             QUIT
 EOF
@@ -159,8 +159,8 @@ _stopInstance() {
 
     if [ $isInstanceUp = true ]
     then
-        sqlplus /nolog <<EOF
-            CONNECT / AS SYSDBA
+        echo "Deteniendo la instancia ${ORACLE_SID} ..."
+        sqlplus -S / AS SYSDBA <<EOF > logfile
             SHUTDOWN
             QUIT
 EOF
@@ -179,8 +179,8 @@ _stopInstanceImmediate() {
 
     if [ $isInstanceUp = true ]
     then
-        sqlplus /nolog <<EOF
-            CONNECT / AS SYSDBA
+        echo "Deteniendo la instancia ${ORACLE_SID} ..."
+        sqlplus -S / AS SYSDBA <<EOF > logfile
             SHUTDOWN IMMEDIATE
             QUIT
 EOF
